@@ -3,9 +3,23 @@ const express = require("express");
 const cors = require("cors");
 
 // 1. Inisialisasi Firebase Admin
-const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
-  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) 
-  : require("./serviceAccountKey.json");
+let serviceAccount;
+
+try {
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    // Menghapus kemungkinan spasi atau baris baru yang bikin JSON.parse error
+    const jsonString = process.env.FIREBASE_SERVICE_ACCOUNT.trim();
+    serviceAccount = JSON.parse(jsonString);
+    console.log("Service Account berhasil dimuat dari Environment Variable.");
+  } else {
+    serviceAccount = require("./serviceAccountKey.json");
+    console.log("Service Account dimuat dari file lokal.");
+  }
+} catch (error) {
+  console.error("Gagal membaca Service Account:", error.message);
+  // Jangan biarkan aplikasi lanjut jika ini gagal
+  process.exit(1); 
+}
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
