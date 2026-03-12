@@ -23,14 +23,19 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Izinkan jika tanpa origin atau jika ada di daftar allowedOrigins
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    // Izinkan tanpa origin (untuk tools testing) atau jika ada di list
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Blocked by CORS policy'));
+      callback(new Error('Not allowed by CORS'));
     }
-  }
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
+
+app.options('*', cors());
 
 app.use(express.json());
 
@@ -59,6 +64,11 @@ app.post("/delete-users-bulk", async (req, res) => {
 
 // 4. Jalankan Server
 const PORT = process.env.PORT || 3000;
+
+app.get("/", (req, res) => {
+  res.send("Backend SMPIT HQBS is Running");
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
