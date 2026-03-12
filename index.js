@@ -23,19 +23,21 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Izinkan tanpa origin (untuk tools testing) atau jika ada di list
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error('Blocked by CORS policy'));
     }
   },
-  methods: ['GET', 'POST', 'OPTIONS'],
+  methods: ['GET', 'POST', 'OPTIONS'], // Ini sudah menangani OPTIONS secara otomatis
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 
-app.options('/(.*)', cors());
+// HAPUS baris app.options('*', cors()) atau app.options('/(.*)', cors())
+// Karena sudah ditangani oleh app.use(cors(...)) di atas.
 
 app.use(express.json());
 
