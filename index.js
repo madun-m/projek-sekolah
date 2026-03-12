@@ -13,31 +13,13 @@ admin.initializeApp({
 
 const app = express();
 
-// 2. Konfigurasi CORS (Hanya perlu ditulis SATU KALI)
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'https://smpit-hqbs.web.app',
-  'https://smpit-hqbs.firebaseapp.com'
-];
-
+// 2. Konfigurasi CORS (Satu untuk semua rute)
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Blocked by CORS policy'));
-    }
-  },
-  methods: ['GET', 'POST', 'OPTIONS'], // Ini sudah menangani OPTIONS secara otomatis
+  origin: true, 
+  methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-  preflightContinue: false,
-  optionsSuccessStatus: 204
+  credentials: true
 }));
-
-// HAPUS baris app.options('*', cors()) atau app.options('/(.*)', cors())
-// Karena sudah ditangani oleh app.use(cors(...)) di atas.
 
 app.use(express.json());
 
@@ -64,13 +46,13 @@ app.post("/delete-users-bulk", async (req, res) => {
   }
 });
 
-// 4. Jalankan Server
-const PORT = process.env.PORT || 3000;
-
+// Health Check (Halaman Utama)
 app.get("/", (req, res) => {
-  res.send("Backend SMPIT HQBS is Running");
+  res.send("Backend SMPIT HQBS is Running ✅");
 });
 
+// 4. Jalankan Server
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
