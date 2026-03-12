@@ -35,16 +35,23 @@ const allowedOrigins = [
   'https://smpit-hqbs.firebaseapp.com'
 ];
 
+// Gunakan konfigurasi yang lebih sederhana tapi mencakup semuanya
 app.use(cors({
   origin: function (origin, callback) {
-    // Izinkan jika tanpa origin atau jika ada di daftar allowedOrigins
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    // Izinkan jika tanpa origin (untuk server-to-server) atau jika domain ada di daftar
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Blocked by CORS policy'));
+      console.log("CORS Terblokir untuk domain:", origin); // Agar Bapak bisa pantau di Log Railway
+      callback(new Error('Not allowed by CORS'));
     }
-  }
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
+
+app.options('*', cors());
 
 app.use(express.json());
 
