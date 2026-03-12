@@ -13,23 +13,11 @@ admin.initializeApp({
 
 const app = express();
 
-// 2. MIDDLEWARE PRIORITAS UTAMA
-// Letakkan ini sebelum app.use(cors) untuk memotong jalur 502
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', req.header('Origin') || '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(204);
-  }
-  next();
-});
-
-// Tetap gunakan middleware cors sebagai cadangan
+// 2. Konfigurasi CORS - Letakkan PALING ATAS
 app.use(cors({
-  origin: true,
+  origin: true, // Mengizinkan semua origin (aman untuk Railway)
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
 
@@ -38,18 +26,31 @@ app.use(express.json());
 // 3. Endpoint Hapus Massal
 app.post("/delete-users-bulk", async (req, res) => {
   const { uids } = req.body;
-  if (!uids || uids.length === 0) return res.status(400).send({ error: "UID kosong" });
+  console.log("Menerima permintaan hapus untuk UID:", uids);
+
+  if (!uids || uids.length === 0) {
+    return res.status(400).send({ error: "Daftar UID kosong" });
+  }
 
   try {
     const result = await admin.auth().deleteUsers(uids);
-    res.status(200).send(result);
+    console.log("Berhasil:", result.successCount, "Gagal:", result.failureCount);
+    res.status(200).send({ 
+      successCount: result.successCount,
+      failureCount: result.failureCount 
+    });
   } catch (error) {
+    console.error("Error Admin SDK:", error);
     res.status(500).send({ error: error.message });
   }
 });
 
-app.get("/", (req, res) => res.send("Backend SMPIT HQBS is Running"));
+// Root handler untuk cek status (Health Check)
+app.get("/", (req, res) => {
+  res.status(200).send("Backend SMPIT HQBS is Running");
+});
 
+// 4. Jalankan Server - Pastikan 0.0.0.0 agar bisa diakses luar
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
