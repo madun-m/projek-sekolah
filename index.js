@@ -40,5 +40,27 @@ app.post("/delete-users-bulk", async (req, res) => {
   }
 });
 
+const cors = require('cors');
+
+// Izinkan domain Firebase Bapak dan localhost (untuk uji coba)
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://smpit-hqbs.web.app',
+  'https://smpit-hqbs.firebaseapp.com'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // izinkan request tanpa origin (seperti mobile apps atau curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'Kebijakan CORS backend ini tidak mengizinkan akses dari origin tersebut.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  }
+}));
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
