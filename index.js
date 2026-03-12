@@ -14,12 +14,26 @@ admin.initializeApp({
 const app = express();
 
 // 2. Konfigurasi CORS (Satu untuk semua rute)
+// 2. Konfigurasi CORS (Gunakan middleware ini di bagian atas)
 app.use(cors({
   origin: true, 
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
+
+// TAMBAHKAN INI: Handler manual untuk OPTIONS tanpa menggunakan wildcard (*)
+// Agar terhindar dari PathError di Node.js v24 namun tetap menjawab preflight
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Origin', req.header('Origin') || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    return res.sendStatus(204);
+  }
+  next();
+});
 
 app.use(express.json());
 
@@ -54,5 +68,5 @@ app.get("/", (req, res) => {
 // 4. Jalankan Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
