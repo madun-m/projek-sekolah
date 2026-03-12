@@ -13,59 +13,43 @@ admin.initializeApp({
 
 const app = express();
 
-// 2. Konfigurasi CORS (Satu untuk semua rute)
-// 2. Konfigurasi CORS (Gunakan middleware ini di bagian atas)
-app.use(cors({
-  origin: true, 
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}));
-
-// TAMBAHKAN INI: Handler manual untuk OPTIONS tanpa menggunakan wildcard (*)
-// Agar terhindar dari PathError di Node.js v24 namun tetap menjawab preflight
+// 2. MIDDLEWARE PRIORITAS UTAMA
+// Letakkan ini sebelum app.use(cors) untuk memotong jalur 502
 app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', req.header('Origin') || '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+
   if (req.method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Origin', req.header('Origin') || '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.header('Access-Control-Allow-Credentials', 'true');
     return res.sendStatus(204);
   }
   next();
 });
+
+// Tetap gunakan middleware cors sebagai cadangan
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 
 app.use(express.json());
 
 // 3. Endpoint Hapus Massal
 app.post("/delete-users-bulk", async (req, res) => {
   const { uids } = req.body;
-  console.log("Menerima permintaan hapus untuk UID:", uids);
-
-  if (!uids || uids.length === 0) {
-    return res.status(400).send({ error: "Daftar UID kosong" });
-  }
+  if (!uids || uids.length === 0) return res.status(400).send({ error: "UID kosong" });
 
   try {
     const result = await admin.auth().deleteUsers(uids);
-    console.log("Berhasil menghapus:", result.successCount, "gagal:", result.failureCount);
-    res.status(200).send({ 
-      message: "Proses selesai", 
-      successCount: result.successCount,
-      failureCount: result.failureCount 
-    });
+    res.status(200).send(result);
   } catch (error) {
-    console.error("Error Admin SDK:", error);
     res.status(500).send({ error: error.message });
   }
 });
 
-// Health Check (Halaman Utama)
-app.get("/", (req, res) => {
-  res.send("Backend SMPIT HQBS is Running ✅");
-});
+app.get("/", (req, res) => res.send("Backend SMPIT HQBS is Running"));
 
-// 4. Jalankan Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
