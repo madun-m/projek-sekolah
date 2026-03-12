@@ -1,7 +1,13 @@
 const admin = require("firebase-admin");
 const express = require("express");
 const cors = require("cors");
-const serviceAccount = require("./serviceAccountKey.json");
+// const serviceAccount = require("./serviceAccountKey.json");
+
+
+// Ubah bagian ini agar membaca dari Environment Variable
+const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
+  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) 
+  : require("./serviceAccountKey.json"); // Tetap bisa jalan di localhost jika file ada
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
@@ -35,4 +41,4 @@ app.post("/delete-users-bulk", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Backend jalan di port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
