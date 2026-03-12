@@ -1,0 +1,19 @@
+# Dependency (Folder library tidak perlu diupload karena berat)
+node_modules/
+
+# Rahasia Firebase (SANGAT PENTING!)
+# File ini mengandung kunci akses penuh, jangan sampai terupload
+serviceAccountKey.json
+
+# Environment Variables (Jika nanti Bapak menggunakan file .env)
+.env
+.env.local
+
+# Log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# File sistem yang tidak perlu
+.DS_Store
+Thumbs.db
